@@ -1,0 +1,15 @@
+=head1 Packaging Ruby software with gem2deb
+
+=head2 Quick start: converting a .gem package
+
+=head2 Looking at what gem2deb generated
+
+=head2 Running tests
+
+=head3 Listing test files explicitly
+
+=head3 Using a Debian-specific Rakefile
+
+=head3 Using a single Ruby script
+
+=head2 Updating to new upstream versions

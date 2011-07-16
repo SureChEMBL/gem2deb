@@ -9,7 +9,7 @@ ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 	NO_PKG_MANGLE=1 rake test
 endif
 	mkdir -p man
-	for i in bin/*; do pod2man -c "" -r "" $$i > man/$$(basename $$i).1; done
+	for i in bin/* doc/*; do pod2man -c "" -r "" $$i > man/$$(basename $$i).1; done
 
 override_dh_auto_clean:
 	rm -rf man/
