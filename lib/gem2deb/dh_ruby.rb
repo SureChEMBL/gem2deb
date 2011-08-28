@@ -73,8 +73,12 @@ module Gem2Deb
     TEST_RUNNER = File.expand_path(File.join(File.dirname(__FILE__),'test_runner.rb'))
     LIBDIR = File.expand_path(File.join(File.dirname(__FILE__), '..'))
 
+    attr_accessor :dh_auto_install_destdir
+
     def install(argv)
       puts "  Entering dh_ruby --install" if @verbose
+
+      self.dh_auto_install_destdir = argv.first
 
       supported_versions =
         if all_ruby_versions_supported?
@@ -148,7 +152,7 @@ module Gem2Deb
     def install_symlinks(package, supported_versions)
       supported_versions.select { |v| v == 'ruby1.8' }.each do |rubyver|
         archdir = destdir(package, :archdir, rubyver)
-        vendordir = destdir(packages, :libdir, rubyver)
+        vendordir = destdir(package, :libdir, rubyver)
         vendorlibdir = File.dirname(archdir)
         Dir.glob(File.join(archdir, '*.so')).each do |so|
           rb = File.basename(so).gsub(/\.so$/, '.rb')
@@ -314,7 +318,13 @@ module Gem2Deb
     end
 
     def destdir_for(package)
-      File.expand_path(File.join('debian', package))
+      destdir =
+        if ENV['DH_RUBY_USE_DH_AUTO_INSTALL_DESTDIR']
+          self.dh_auto_install_destdir
+        else
+          File.join('debian', package)
+        end
+      File.expand_path(destdir)
     end
 
     def update_shebangs(package)
