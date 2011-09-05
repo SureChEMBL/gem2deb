@@ -15,7 +15,7 @@ class Gem2DebTest < Gem2DebTestCase
     puts "Building #{gem} ..."
     self.build(gem)
     should "build #{gem} correcly" do
-      package_name = 'ruby-' + File.basename(File.dirname(File.dirname(gem))).gsub('_', '-')
+      package_name = 'ruby-' + File.basename(File.dirname(File.dirname(gem))).gsub('_', '-').downcase
       binary_packages = File.join(self.class.tmpdir, "#{package_name}_*.deb")
       packages = Dir.glob(binary_packages)
       assert !packages.empty?, "building #{gem} produced no binary packages! (expected to find #{binary_packages})"
@@ -24,7 +24,7 @@ class Gem2DebTest < Gem2DebTestCase
 
   should 'generate a non-lintian-clean copyright file' do
     changes_file = File.join(self.class.tmpdir, "ruby-simplegem_*.changes")
-    assert_match /E: ruby-simpleextension-in-root: helper-templates-in-copyright/, `lintian #{changes_file}`
+    assert_match /E: ruby-simplegem: helper-templates-in-copyright/, `lintian #{changes_file}`
   end
 
 end
