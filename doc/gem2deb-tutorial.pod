@@ -1,15 +1,27 @@
 =head1 Packaging Ruby software with gem2deb
 
-=head2 Quick start: converting a .gem package
+=head1 Quick start: converting a .gem package
 
-=head2 Looking at what gem2deb generated
+Looking at what gem2deb generated
 
-=head2 Running tests
+=head1 Assumptions gem2deb makes about the source package
 
-=head3 Listing test files explicitly
+=head1 Common exceptional cases
 
-=head3 Using a Debian-specific Rakefile
+=head2 Generating multiple binary packages from a single source tree
 
-=head3 Using a single Ruby script
+    DH_RUBY_USE_DH_AUTO_INSTALL_DESTDIR + override_dh_auto_install + debian/*.install
 
-=head2 Updating to new upstream versions
+=head2 Ruby code not in lib/
+
+    override_dh_auto_install
+
+=head1 Running tests
+
+=head1 Listing test files explicitly
+
+=head2 Using a Debian-specific Rakefile
+
+=head2 Using a single Ruby script
+
+=head1 Updating to new upstream versions
