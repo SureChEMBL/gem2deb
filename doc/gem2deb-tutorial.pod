@@ -1,10 +1,15 @@
 =head1 Packaging Ruby software with gem2deb
 
+This tutorial covers the usage of C<gem2deb> to package Ruby software --
+libraries and applications -- for Debian.
+
 =head1 Quick start: converting a .gem package
 
 Looking at what gem2deb generated
 
 =head1 Assumptions gem2deb makes about the source package
+
+=head1 Things that needs to be checked on source packages created by gem2deb
 
 =head1 Common exceptional cases
 
