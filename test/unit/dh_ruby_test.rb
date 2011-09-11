@@ -31,12 +31,12 @@ class DhRubyTest < Gem2DebTestCase
   end
 
   context 'installing native extension' do
-    arch = RbConfig::CONFIG['arch']
     [
       '1.8',
       '1.9.1',
     ].each do |version_number|
-      target_so = "/usr/lib/ruby/vendor_ruby/#{version_number}/#{arch}/simpleextension.so"
+      vendorarchdir = VENDOR_ARCH_DIRS['ruby' + version_number]
+      target_so = "#{vendorarchdir}/simpleextension.so"
       should "install native extension for Ruby #{version_number}" do
         assert_installed SIMPLE_EXTENSION_DIRNAME, "ruby-simpleextension", target_so
       end
@@ -48,12 +48,12 @@ class DhRubyTest < Gem2DebTestCase
   end
 
   context 'installing native extension with extconf.rb in the sources root' do
-    arch = RbConfig::CONFIG['arch']
     [
       '1.8',
       '1.9.1',
     ].each do |version_number|
-      target_so = "/usr/lib/ruby/vendor_ruby/#{version_number}/#{arch}/simpleextension_in_root.so"
+      vendorarchdir = VENDOR_ARCH_DIRS['ruby' + version_number]
+      target_so = "#{vendorarchdir}/simpleextension_in_root.so"
       should "install native extension for Ruby #{version_number}" do
         assert_installed SIMPLE_ROOT_EXTENSION_DIRNAME, "ruby-simpleextension-in-root", target_so
       end
@@ -148,6 +148,14 @@ class DhRubyTest < Gem2DebTestCase
     should 'rewrite shebangs in subdirs of bin/' do
       assert_match %r{/usr/bin/ruby}, File.read(self.class.tmpdir + '/rewrite_shebangs/usr/bin/subdir/prog')
     end
+    should 'add a shebang when there is none' do
+      lines = File.readlines(self.class.tmpdir + '/rewrite_shebangs/usr/bin/no-shebang')
+      assert_match %r{/usr/bin/ruby}, lines[0]
+      assert_match /puts/, lines[1]
+    end
+    should 'leave programs with correct permissions after rewriting shebangs' do
+      assert_equal '100755', '%o' % File.stat(self.class.tmpdir + '/rewrite_shebangs/usr/bin/no-shebang').mode
+    end
   end
 
   context 'checking for require "rubygems"' do
@@ -234,7 +242,7 @@ class DhRubyTest < Gem2DebTestCase
         dh_ruby.clean
         dh_ruby.configure
         dh_ruby.build
-        dh_ruby.install File.join(directory, 'debian', 'tmp')
+        dh_ruby.install([File.join(directory, 'debian', 'tmp')])
       end
     end
   end

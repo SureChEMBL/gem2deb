@@ -91,11 +91,11 @@ module Gem2Deb
 
       install_files_and_build_extensions(package, supported_versions)
 
+      update_shebangs(package)
+
       run_tests(supported_versions)
 
       install_substvars(package, supported_versions)
-
-      update_shebangs(package)
 
       check_rubygems
 
@@ -349,6 +349,7 @@ module Gem2Deb
           end
           output.print input.read
         end
+        File.chmod(0755, path)
       end
     end
 

@@ -15,12 +15,12 @@ class DhRubySetuprbTest < Gem2DebTestCase
   package = "ruby-simplesetuprb"
 
   context 'installing native extension with setuprb' do
-    arch = RbConfig::CONFIG['arch']
     [
      '1.8',
      '1.9.1',
     ].each do |version_number|
-      target_so = "/usr/lib/ruby/vendor_ruby/#{version_number}/#{arch}/simplesetuprb.so"
+      vendorarchdir = VENDOR_ARCH_DIRS['ruby' + version_number]
+      target_so = "#{vendorarchdir}/simplesetuprb.so"
       should "install native extension for Ruby #{version_number} for #{package}" do
         assert_installed dirname, package, target_so
       end
@@ -63,7 +63,7 @@ class DhRubySetuprbTest < Gem2DebTestCase
           dh_ruby.clean
           dh_ruby.configure
           dh_ruby.build
-          dh_ruby.install File.join(package_path, 'debian', 'tmp')
+          dh_ruby.install([File.join(package_path, 'debian', 'tmp')])
         end
       end
     end
