@@ -3,11 +3,62 @@
 This tutorial covers the usage of C<gem2deb> to package Ruby software --
 libraries and applications -- for Debian.
 
+=head1 Assumptions gem2deb makes about the source package
+
+L<Rubygems|http://rubygems.org/> is the de-facto standard for
+distribution of Ruby software, much like CPAN is the standard for Perl
+packages. Therefore, gem2deb assumes that Ruby source packages are
+organized in a way that is compatible with Rubygems:
+
+  mypackage-x.y.z/          # Root directory
+    lib/                    # pure-Ruby code
+    bin/                    # Ruby programs (if any)
+    ext/                    # C extensions
+
+None of the above directories is mandatory, but a Ruby package that does
+not contain at least of them is pretty useless.
+
+=head1 An overview of gem2deb
+
+gem2deb, the package, is composed of some programs that help with the
+creation, maintainance and building of Ruby packages. The programs are:
+
+=over
+
+=item
+
+B<gem2deb>
+
+=item
+
+B<dh-make-ruby>
+
+=item
+
+B<gem2tgz>
+
+=item
+
+B<dh_ruby>
+
+=item
+
+B<dh_ruby_fixdepends>
+
+=item
+
+B<gen-ruby-trans-pkgs>
+
+=back
+
+=head1 Other resources
+
+http://pkg-ruby-extras.alioth.debian.org/cgi-bin/gemwatch
+http://githubredir.debian.net/
+
 =head1 Quick start: converting a .gem package
 
 Looking at what gem2deb generated
-
-=head1 Assumptions gem2deb makes about the source package
 
 =head1 Things that needs to be checked on source packages created by gem2deb
 
@@ -23,7 +74,7 @@ Looking at what gem2deb generated
 
 =head1 Running tests
 
-=head1 Listing test files explicitly
+=head2 Listing test files explicitly
 
 =head2 Using a Debian-specific Rakefile
 
