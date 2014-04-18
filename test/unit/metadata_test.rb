@@ -29,6 +29,12 @@ class MetaDataTest < Gem2DebTestCase
     setup do
       @metadata = Gem2Deb::Metadata.new('test/tmp')
     end
+    should 'have no author' do
+      assert_nil @metadata.author
+    end
+    should 'have no authors' do
+      assert_nil @metadata.authors
+    end
     should 'have no homepage' do
       assert_nil @metadata.homepage
     end
@@ -72,6 +78,16 @@ class MetaDataTest < Gem2DebTestCase
     should 'obtain gem version from gemspec' do
       @gemspec.stubs(:version).returns(Gem::Version.new('0.0.1'))
       assert_equal '0.0.1', @metadata.version
+    end
+
+    should 'obtain author from gemspec' do
+      @gemspec.stubs(:author).returns('Debian Ruby Team')
+      assert_equal 'Debian Ruby Team', @metadata.author
+    end
+
+    should 'obtain authors from gemspec' do
+      @gemspec.stubs(:authors).returns(['Debian Ruby Team', 'Another Author'])
+      assert_equal ['Debian Ruby Team', 'Another Author'], @metadata.authors
     end
 
     should 'obtain homepage from gemspec' do

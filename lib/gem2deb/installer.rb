@@ -25,6 +25,16 @@ module Gem2Deb
       @metadata = Gem2Deb::Metadata.new(@root)
     end
 
+    def clean_documentation
+      FileUtils::remove_dir(File::dirname(docdir), force=true)
+    end
+
+    def build_documentation
+      run("rdoc", "--output", docdir, libdir)
+      # remove built jquery.js, .links file symlinks to file in libjs-jquery
+      FileUtils::rm_f(File.join(destdir(:docdir), "js/jquery.js"))
+    end
+
     def install_files_and_build_extensions
       install_files(bindir, destdir(:bindir), 755) if File::directory?(bindir)
 
@@ -136,6 +146,10 @@ module Gem2Deb
       SUPPORTED_RUBY_VERSIONS.keys
     end
 
+    def docdir
+      @docdir ||= File.join(self.root, DOC_DIR)
+    end
+
     def bindir
       @bindir ||= File.join(self.root, 'bin')
     end
@@ -147,6 +161,7 @@ module Gem2Deb
     # This function returns the installation path for the given
     # package and the given target, which is one of:
     # * :bindir
+    # * :docdir
     # * :libdir
     # * :archdir
     # * :prefix
@@ -160,6 +175,8 @@ module Gem2Deb
         return dir
       when :bindir
         return File.join(dir, BIN_DIR)
+      when :docdir
+        return File.join(dir, "usr/share/doc/#{binary_package}/html")
       when :libdir
         return File.join(dir, RUBY_CODE_DIR)
       when :archdir

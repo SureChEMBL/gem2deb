@@ -38,6 +38,7 @@ module Gem2Deb
 
       installers.each do |installer|
         installer.run_make_clean_on_extensions
+        installer.clean_documentation
       end
 
       puts "  Leaving dh_ruby --clean" if @verbose
@@ -49,8 +50,13 @@ module Gem2Deb
     end
 
     def build
-      # puts "  Entering dh_ruby --build" if @verbose
-      # puts "  Leaving dh_ruby --build" if @verbose
+      puts "  Entering dh_ruby --build" if @verbose
+
+      installers.each do |installer|
+        installer.build_documentation
+      end
+
+      puts "  Leaving dh_ruby --build" if @verbose
     end
 
     def test

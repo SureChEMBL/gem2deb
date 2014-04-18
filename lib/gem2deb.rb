@@ -39,6 +39,8 @@ module Gem2Deb
 
   LIBDIR = File.expand_path(File.dirname(__FILE__))
 
+  DOC_DIR = 'debian/gem2deb_generated_docs/html'
+
   def run(*argv)
     puts(_format_cmdline(argv)) if $VERBOSE
     system(*argv)

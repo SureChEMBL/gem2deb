@@ -37,6 +37,12 @@ class Gem2DebTest < Gem2DebTestCase
     end
   end
 
+  self.build_tree('test/sample/documentation') do |dir|
+    should 'contain generated documentation' do
+        assert_file_exists "#{dir}/debian/gem2deb_generated_docs/html"
+    end
+  end
+
   self.build_tree('test/sample/examples') do |dir|
 
     should 'not compress *.rb files installed as examples' do

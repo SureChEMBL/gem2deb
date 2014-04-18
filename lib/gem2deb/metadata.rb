@@ -58,6 +58,14 @@ module Gem2Deb
       @version ||= gemspec && gemspec.version.to_s || read_version_from(source_dir) || '0.1.0~FIXME'
     end
 
+    def author
+        gemspec && gemspec.author
+    end
+
+    def authors
+        gemspec && gemspec.authors
+    end
+
     def homepage
       gemspec && gemspec.homepage
     end

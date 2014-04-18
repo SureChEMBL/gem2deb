@@ -1,0 +1,10 @@
+Document: ruby-documentation
+Title: Debian ruby-documentation Manual
+Author: Debian Ruby Team
+Abstract: Documentation test
+ A simple test to check documentation generation.
+Section: Programming/Ruby
+
+Format: HTML
+Index: /usr/share/doc/ruby-documentation/html/index.html
+Files: /usr/share/doc/ruby-documentation/html/*

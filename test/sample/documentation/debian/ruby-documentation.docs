@@ -1,0 +1,3 @@
+# install docs automatically built by gem2deb
+debian/gem2deb_generated_docs/html
+# FIXME: READMEs found

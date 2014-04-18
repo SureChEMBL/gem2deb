@@ -1,0 +1,4 @@
+# Symlinking to automatically removed jquery.js.
+# If documentation is changed, update path to docs
+# and remove bundled jquery.js in debian/rules.
+usr/share/javascript/jquery/jquery.js usr/share/doc/ruby-documentation/html/js/jquery.js

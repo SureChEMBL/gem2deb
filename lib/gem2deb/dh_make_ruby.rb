@@ -110,6 +110,16 @@ module Gem2Deb
       [source_package_name, gem_version].join('-')
     end
 
+    def authors
+      if defined? metadata.author
+        [metadata.author]
+      elsif defined? metadata.authors
+        metadata.authors
+      else
+        [""]
+      end
+    end
+
     def homepage
       metadata.homepage
     end
@@ -301,16 +311,43 @@ module Gem2Deb
     end
 
     def other_files
-      # docs
-      docs = ""
-      if File::directory?('doc')
-        docs += <<-EOF
-# FIXME: doc/ dir found in source. Consider installing the docs.
-# Examples:
-# doc/manual.html
-# doc/site/*
-            EOF
+      # dirs
+      File::open("debian/#{source_package_name}.dirs", 'w') do |f|
+        f.puts "usr/share/doc/#{source_package_name}/html"
       end
+
+      # links
+      File::open("debian/#{source_package_name}.links", 'w') do |f|
+        f.puts <<-EOF
+# Symlinking to automatically removed jquery.js.
+# If documentation is changed, update path to docs
+# and remove bundled jquery.js in debian/rules.
+usr/share/javascript/jquery/jquery.js usr/share/doc/#{source_package_name}/html/js/jquery.js
+        EOF
+      end
+
+      # doc-base
+      doc_base = <<-EOF
+Document: #{source_package_name}
+Title: Debian #{source_package_name} Manual
+Author: #{authors.join(", ")}
+Abstract: #{short_description}
+ #{long_description}
+Section: Programming/Ruby
+
+Format: HTML
+Index: /usr/share/doc/#{source_package_name}/html/index.html
+Files: /usr/share/doc/#{source_package_name}/html/*
+      EOF
+      File::open("debian/#{source_package_name}.doc-base", 'w') do |f|
+        f.puts doc_base
+      end
+
+      # docs
+      docs = <<-EOF
+# install docs automatically built by gem2deb
+#{DOC_DIR}
+      EOF
       readmes = Dir::glob('README*')
       docs += <<-EOF
 # FIXME: READMEs found
@@ -318,10 +355,8 @@ module Gem2Deb
       readmes.each do |r|
         docs << "# #{r}\n"
       end
-      if docs != ""
-        File::open("debian/#{source_package_name}.docs", 'w') do |f|
-          f.puts docs
-        end
+      File::open("debian/#{source_package_name}.docs", 'w') do |f|
+        f.puts docs
       end
 
       # examples

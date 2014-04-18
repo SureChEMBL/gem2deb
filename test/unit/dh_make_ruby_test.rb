@@ -39,6 +39,10 @@ class DhMakeRubyTest < Gem2DebTestCase
       debian/compat
       debian/watch
       debian/source/format
+      debian/ruby-simplegem.dirs
+      debian/ruby-simplegem.doc-base
+      debian/ruby-simplegem.docs
+      debian/ruby-simplegem.links
     ].each do |file|
       filename = File.join(DEBIANIZED_SIMPLE_GEM, file)
       should "create #{file}" do
@@ -91,6 +95,18 @@ class DhMakeRubyTest < Gem2DebTestCase
     end
     should 'create debian/rules' do
       assert_file_exists File.join(TEST_SIMPLE_GIT, 'debian/rules')
+    end
+    should 'create debian/ruby-simplegit.dirs' do
+      assert_file_exists File.join(TEST_SIMPLE_GIT, 'debian/ruby-simplegit.dirs')
+    end
+    should 'create debian/ruby-simplegit.doc-base' do
+      assert_file_exists File.join(TEST_SIMPLE_GIT, 'debian/ruby-simplegit.doc-base')
+    end
+    should 'create debian/ruby-simplegit.docs' do
+      assert_file_exists File.join(TEST_SIMPLE_GIT, 'debian/ruby-simplegit.docs')
+    end
+    should 'create debian/ruby-simplegit.links' do
+      assert_file_exists File.join(TEST_SIMPLE_GIT, 'debian/ruby-simplegit.links')
     end
   end
 

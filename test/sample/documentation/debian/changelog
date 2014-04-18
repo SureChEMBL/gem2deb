@@ -1,0 +1,5 @@
+ruby-documentation (0.0.1-1) UNRELEASED; urgency=low
+
+  * Initial release (Closes: #nnnn)
+
+ -- Per Andersson <avtobiff@debian.org> Fri, 18 Apr 2014 22:55:36 +0200
