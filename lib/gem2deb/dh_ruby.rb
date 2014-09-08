@@ -27,10 +27,13 @@ module Gem2Deb
     attr_accessor :verbose
     attr_accessor :installer_class
 
+    attr_accessor :build_args
+
     def initialize
       @verbose = true
       @skip_checks = nil
       @installer_class = Gem2Deb::Installer
+      @build_args = ""
     end
 
     def clean
@@ -73,6 +76,8 @@ module Gem2Deb
           exit(1)
         end
       end
+
+      @build_args = ARGV.join(" ")
 
       installers.each do |installer|
         installer.dh_auto_install_destdir = argv.first
@@ -199,7 +204,8 @@ module Gem2Deb
             installer_class.new(
               package[:binary_package],
               package[:root],
-              ruby_versions
+              ruby_versions,
+              build_args
             ).tap do |installer|
               installer.verbose = self.verbose
             end

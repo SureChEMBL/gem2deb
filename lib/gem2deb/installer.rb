@@ -18,11 +18,14 @@ module Gem2Deb
     attr_accessor :verbose
     attr_accessor :dh_auto_install_destdir
 
-    def initialize(binary_package, root, ruby_versions = SUPPORTED_RUBY_VERSIONS.keys)
+    attr_accessor :build_args
+
+    def initialize(binary_package, root, ruby_versions = SUPPORTED_RUBY_VERSIONS.keys, build_args = "")
       @binary_package = binary_package
       @root = File.expand_path(root)
       @ruby_versions = ruby_versions
       @metadata = Gem2Deb::Metadata.new(@root)
+      @build_args = build_args
     end
 
     def install_files_and_build_extensions
@@ -33,7 +36,7 @@ module Gem2Deb
       if metadata.has_native_extensions?
         ruby_versions.each do |rubyver|
           puts "Building extension for #{rubyver} ..." if verbose
-          run(SUPPORTED_RUBY_VERSIONS[rubyver], "-I#{LIBDIR}", EXTENSION_BUILDER, root, destdir_base)
+          run(SUPPORTED_RUBY_VERSIONS[rubyver], "-I#{LIBDIR}", EXTENSION_BUILDER, root, destdir_base, build_args)
 
           # Remove duplicate files installed by rubygems in the arch dir
           # This is a hack to workaround a problem in rubygems

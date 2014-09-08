@@ -40,7 +40,7 @@ module Gem2Deb
       end
     end
 
-    def build_and_install(destdir)
+    def build_and_install(destdir, build_args)
       clean
       results = []
       rubygems_builder =
@@ -69,7 +69,7 @@ module Gem2Deb
           # real time
           Gem.configuration.verbose = 'YES'
 
-          rubygems_builder.build(extension, '.', target, results)
+          rubygems_builder.build(extension, '.', target, results, build_args)
           puts results
 
           Gem.configuration.verbose = verbose
@@ -96,11 +96,11 @@ module Gem2Deb
       end
     end
 
-    def self.build_all_extensions(root, destdir)
+    def self.build_all_extensions(root, destdir, build_args="")
       all_extensions(root).each do |extension|
         ext = new(extension)
         ext.clean
-        ext.build_and_install(destdir)
+        ext.build_and_install(destdir, build_args)
       end
     end
 
@@ -112,10 +112,10 @@ module Gem2Deb
 end
 
 if $PROGRAM_NAME == __FILE__
-  if ARGV.length == 2
+  if ARGV.length >= 2
     Gem2Deb::ExtensionBuilder.build_all_extensions(*ARGV)
   else
-    puts "usage: #{File.basename($PROGRAM_NAME)} ROOT DESTDIR"
+    puts "usage: #{File.basename($PROGRAM_NAME)} ROOT DESTDIR [BUILD_ARGS]"
     exit(1)
   end
 end
