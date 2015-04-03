@@ -1,4 +1,4 @@
-require 'test_helper'
+require_relative '../test_helper'
 require 'gem2deb/gem2tgz'
 require 'gem2deb/dh_make_ruby'
 require 'gem2deb/dh_ruby'
@@ -143,6 +143,23 @@ class DhRubyTest < Gem2DebTestCase
       assert_equal [ruby_bar], @dh_ruby.send(:packages)
     end
 
+  end
+
+  context 'DESTDIR' do
+    setup do
+      @dh_ruby = Gem2Deb::DhRuby.new
+    end
+    should 'be debian/${binary_package} by default' do
+      assert_match /debian\/ruby-foo$/, @dh_ruby.send(:destdir_for, 'ruby-foo', 'debian/tmp')
+    end
+    should 'install to debian/tmp when DH_RUBY_USE_DH_AUTO_INSTALL_DESTDIR is set' do
+      saved_env = ENV['DH_RUBY_USE_DH_AUTO_INSTALL_DESTDIR']
+      ENV['DH_RUBY_USE_DH_AUTO_INSTALL_DESTDIR'] = 'yes'
+
+      assert_equal 'debian/tmp', @dh_ruby.send(:destdir_for, 'ruby-foo', 'debian/tmp')
+
+      ENV['DH_RUBY_USE_DH_AUTO_INSTALL_DESTDIR'] = saved_env
+    end
   end
 
   protected

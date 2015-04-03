@@ -1,17 +1,17 @@
 # vim: ts=2 sw=2 expandtab
 # -*- coding: utf-8 -*-
 # Copyright © 2011, Lucas Nussbaum <lucas@debian.org>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -58,13 +58,18 @@ module Gem2Deb
 
     attr_accessor :do_wnpp_check
 
+    attr_accessor :extra_build_dependencies
+
     def initialize(input, options = {})
+      generate_or_update_gem_to_package_data
+
       initialize_from_options(options)
       if File.directory?(input)
         initialize_from_directory(input)
       else
         initialize_from_tarball(input)
       end
+      @extra_build_dependencies = []
     end
 
     def initialize_from_options(options)
@@ -102,8 +107,44 @@ module Gem2Deb
     end
 
     def gem_name_to_source_package_name(gem_name)
-      'ruby-' + gem_name.gsub(/^ruby[-_]|[-_]ruby$/, '')
+      @gem_to_package[gem_name] || 'ruby-' + gem_name.gsub(/^ruby[-_]|[-_]ruby$/, '')
     end
+
+    def generate_or_update_gem_to_package_data
+      if Gem2Deb.testing
+        @gem_to_package = { 'rake' => 'rake', 'rails' => 'rails' }
+        return
+      end
+
+      if !File.exists?('/usr/bin/apt-file')
+        puts "E: apt-file not found. Please install the package apt-file"
+        exit 1
+      end
+
+      cache_dir = File.join(ENV['HOME'], '.cache', 'gem2deb')
+      FileUtils.mkdir_p(cache_dir)
+      cache = File.join(cache_dir, 'gem_to_packages.yaml')
+
+      if File.exists?(cache)
+        stat = File.stat(cache)
+        update = (Time.now.to_i - stat.mtime.to_i) > (60*60*24) # keep cache for 24h
+      else
+        update = true
+      end
+
+      if update
+        if system('apt-file search /usr/share/rubygems-integration/ > ' + cache + '.new')
+          system('sed', '-i', '-e', 's#/.*/##; s/-[0-9.]\+.gemspec//', cache + '.new')
+          FileUtils.mv(cache + '.new', cache)
+        else
+          puts 'E: dh-make-ruby needs an up-to-date apt-file cache in order to map gem names to package names'
+          exit $?.exitstatus
+        end
+      end
+
+      @gem_to_package = YAML.load_file(cache).invert
+    end
+
 
     def gem_dirname
       [gem_name, gem_version].join('-')
@@ -141,12 +182,13 @@ module Gem2Deb
     def build_in_directory(directory)
       Dir.chdir(directory) do
         read_upstream_source_info
-        create_debian_boilerplates
+        FileUtils.mkdir_p('debian')
         other_files
         test_suite
+        create_debian_boilerplates
       end
     end
-    
+
     def read_upstream_source_info
       read_metadata('.')
       initialize_binary_package
@@ -158,10 +200,27 @@ module Gem2Deb
 
     def initialize_binary_package
       self.binary_package = Package.new(source_package_name, metadata.has_native_extensions? ? 'any' : 'all')
-      metadata.dependencies.each do |dependency|
-        binary_package.gem_dependencies << dependency
+      with_each_runtime_dependency do |dependency|
+        binary_package.dependencies << dependency
       end
       binary_package
+    end
+
+    def with_each_runtime_dependency
+      (metadata.dependencies).select do |dep|
+        dep.type == :runtime
+      end.each do |dep|
+        dependency = gem_name_to_source_package_name(dep.name)
+        version = dep.requirement.to_s
+        if version == '>= 0'
+          yield(dependency)
+        else
+          dep.requirements_list.each do |v|
+            spec = v.gsub('~>', '>=').gsub(/>(\s+)/, '>>\1').gsub(/<(\s+)/, '<<\1')
+            yield('%s (%s)' % [dependency, spec])
+          end
+        end
+      end
     end
 
     def buildpackage(source_only = false, check_build_deps = true)
@@ -288,10 +347,7 @@ module Gem2Deb
         self.architecture = architecture
       end
       def dependencies
-        ['${shlibs:Depends}', '${misc:Depends}', 'ruby | ruby-interpreter' ]
-      end
-      def gem_dependencies
-	@gem_dependencies ||= []
+        @dependencies ||= []
       end
     end
 
@@ -303,21 +359,16 @@ module Gem2Deb
 
     def test_suite_rspec
       if File::directory?("spec")
+        extra_build_dependencies << 'ruby-rspec' << 'rake'
         write_if_missing("debian/ruby-tests.rake") do |f|
           f.puts <<-EOF
-# FIXME
-# there's a spec/ directory in the upstream source.
-# The recommended way to run the RSpec suite is via a rake task.
-# The following commands are enough in many cases and can be adapted to other
-# situations.
-#
-# require 'rspec/core/rake_task'
-#
-# RSpec::Core::RakeTask.new(:spec) do |spec|
-#  spec.pattern      = './spec/*_spec.rb'
-# end
-#
-# task :default => :spec
+require 'rspec/core/rake_task'
+
+RSpec::Core::RakeTask.new(:spec) do |spec|
+  spec.pattern = './spec/**/*_spec.rb'
+end
+
+task :default => :spec
         EOF
         end
         true
@@ -340,21 +391,14 @@ module Gem2Deb
 
     def test_suite_rb
       if File::directory?("test")
-        write_if_missing("debian/ruby-tests.rb") do |f|
+        extra_build_dependencies << 'rake'
+        write_if_missing("debian/ruby-tests.rake") do |f|
           f.puts <<-EOF
-# FIXME
-# there's a test/ directory in the upstream source, but
-# no test suite was defined in the Gem specification. It would be
-# a good idea to define it here so the package gets tested at build time.
-# Examples:
-# $: << './test/'
-# Dir['./test/**/*.rb'].each { |f| require f }
-#
-# require './test/ts_foo.rb'
-#
-# require 'rbconfig'
-# ruby = ENV['RUBY_TEST_BIN']
-# exec("\#{ruby} -I. test/runtests.rb")
+require 'gem2deb/rake/testtask'
+
+Gem2Deb::Rake::TestTask.new do |t|
+  t.test_files = FileList['test/**/*_test.rb']
+end
         EOF
         end
         true

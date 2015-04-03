@@ -24,6 +24,9 @@ include Gem2Deb
 engine = Gem2Deb::DhRuby.new
 
 optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: dh_ruby [OPTIONS]"
+  opts.separator "Options:"
+
   opts.on('-h', '--help', 'show help') do
     puts opts
     exit
@@ -319,6 +322,42 @@ be ignored when checking for `require "rubygems"` lines. Example:
 As you can see above, you have to list filenames based on their corresponding
 install locations in the package temporary install directory, i.e.
 `debian/${pkg}/..`
+
+=item debian/I<dh_ruby.mk>
+
+If this file is present, dh_ruby will call B<make> passing it as the makefile
+during the build, in the I<clean>, I<build>, and I<install> steps, like this:
+
+=over
+
+=item clean: B<make -f debian/dh_ruby.mk clean>
+
+=item build: B<make -f debian/dh_ruby.mk>
+
+=item install: B<make -f debian/dh_ruby.mk install>
+
+=back
+
+If you want the upstream Makefile to be used, just make I<debian/dh_ruby.mk> a
+symlink to I<../Makefile>.
+
+=item debian/I<dh_ruby.rake>
+
+If this file is present, dh_ruby will call B<rake> passing it as the rakefile
+during the build, in the I<clean>, I<build>, and I<install> steps, like this:
+
+=over
+
+=item clean: B<rake -f debian/dh_ruby.rake clean>
+
+=item build: B<rake -f debian/dh_ruby.rake>
+
+=item install: B<rake -f debian/dh_ruby.rake install>
+
+=back
+
+If you want the upstream Rakefile to be used, just make I<debian/dh_ruby.rake> a
+symlink to I<../Rakefile>.
 
 =back
 

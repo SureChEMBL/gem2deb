@@ -13,10 +13,11 @@ Build-Depends: debhelper (>= 7.0.50~),
                rake,
                ruby-all-dev (>= 1:2.1.0.3~),
                ruby-mocha (>= 0.14.0),
+               ruby-rspec,
                ruby-setup,
                ruby-shoulda-context,
                ruby-test-unit
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Vcs-Git: git://anonscm.debian.org/pkg-ruby-extras/gem2deb.git
 Vcs-Browser: http://anonscm.debian.org/gitweb?p=pkg-ruby-extras/gem2deb.git;a=summary
 XS-Testsuite: autopkgtest
@@ -32,6 +33,7 @@ Depends: build-essential,
          ${misc:Depends},
          ${perl:Depends},
          ${shlibs:Depends}
+Recommends: apt-file
 Description: Debian Ruby packaging suite
  gem2deb is a set of tools to create Debian package from ruby software
  distributed with Rubygems. gem2tgz converts the .gem file to a tar archive,

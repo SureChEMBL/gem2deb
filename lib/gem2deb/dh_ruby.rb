@@ -15,6 +15,7 @@
 
 require 'gem2deb'
 require 'gem2deb/installer'
+require 'gem2deb/make'
 require 'find'
 require 'fileutils'
 
@@ -37,28 +38,27 @@ module Gem2Deb
     end
 
     def clean
-      puts "  Entering dh_ruby --clean" if @verbose
+      puts "   dh_ruby --clean" if @verbose
+
+      make.clean
 
       installers.each do |installer|
         installer.run_make_clean_on_extensions
       end
-
-      puts "  Leaving dh_ruby --clean" if @verbose
     end
 
     def configure
-      # puts "  Entering dh_ruby --configure" if @verbose
-      # puts "  Leaving dh_ruby --configure" if @verbose
+      # puts "   dh_ruby --configure" if @verbose
     end
 
     def build
-      # puts "  Entering dh_ruby --build" if @verbose
-      # puts "  Leaving dh_ruby --build" if @verbose
+      puts "   dh_ruby --build" if @verbose
+
+      make.build
     end
 
     def test
-      # puts "  Entering dh_ruby --test" if @verbose
-      # puts "  Leaving dh_ruby --test" if @verbose
+      # puts "   dh_ruby --test" if @verbose
     end
 
     if File.exist? File.expand_path(File.join(File.dirname(__FILE__),'../../bin','gem2deb-test-runner'))
@@ -68,7 +68,11 @@ module Gem2Deb
     end
 
     def install(argv)
-      puts "  Entering dh_ruby --install" if @verbose
+      puts "   dh_ruby --install" if @verbose
+
+      dh_auto_install_destdir = argv.first
+
+      make.install(destdir_for(packages.first[:binary_package], dh_auto_install_destdir))
 
       ruby_versions.each do |version|
         if !SUPPORTED_RUBY_VERSIONS.include?(version)
@@ -80,7 +84,7 @@ module Gem2Deb
       @build_args = ARGV.join(" ")
 
       installers.each do |installer|
-        installer.dh_auto_install_destdir = argv.first
+        installer.destdir_base = destdir_for(installer.binary_package, dh_auto_install_destdir)
         installer.install_files_and_build_extensions
         installer.update_shebangs
       end
@@ -92,11 +96,10 @@ module Gem2Deb
         installer.install_gemspec
         check_rubygems(installer)
       end
-
-      puts "  Leaving dh_ruby --install" if @verbose
     end
 
-    protected
+    protected # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
     def check_rubygems(installer)
       if skip_checks?
@@ -230,6 +233,18 @@ module Gem2Deb
             end
           end
         end
+    end
+
+    def make
+      @make ||= Gem2Deb::Make.new
+    end
+
+    def destdir_for(binary_package, dh_auto_install_destdir)
+      if ENV['DH_RUBY_USE_DH_AUTO_INSTALL_DESTDIR']
+        dh_auto_install_destdir
+      else
+        File.join('debian', binary_package.to_s)
+      end
     end
 
   end

@@ -1,13 +1,61 @@
-gem2deb (0.9.3) UNRELEASED; urgency=medium
+gem2deb (0.13) UNRELEASED; urgency=medium
 
   [ Antonio Terceiro ]
-  * gem2deb-test-runner: add '.' to $LOAD_PATH with --autopkgtest
-  * Gem2Deb::TestRunner: remove innocuous constructor
+  * dh-make-ruby: bump Standards-Version in template to 3.9.6
+  * dh-make-ruby: add gem runtime dependencies to Build-Depends: as well
 
   [ Cédric Boutillier ]
   * Allow additional parameters for extconf.rb (Closes: #756129)
 
- -- Cédric Boutillier <boutil@debian.org>  Mon, 08 Sep 2014 17:12:54 +0200
+ -- Antonio Terceiro <terceiro@debian.org>  Sat, 28 Feb 2015 13:27:25 -0300
+
+gem2deb (0.12) experimental; urgency=medium
+
+  * dh_ruby: if debian/dh_ruby.{mk,rake} exists, call {make,rake} on it during
+    the build. See docs in dh_ruby(1)
+  * dh-make-ruby: use a cache based on the output of apt-file to map gem names
+    to Debian package names when generating dependencies.
+    - add apt-file to Recommends:
+
+ -- Antonio Terceiro <terceiro@debian.org>  Sat, 21 Feb 2015 20:34:04 -0200
+
+gem2deb (0.11) experimental; urgency=medium
+
+  * dh-make-ruby: generate 'Testsuite: autopkgtest-pkg-ruby' to not conflict
+    with DEP-8 spec (i.e., if the 'Testsuite' field contains 'autopkgtest',
+    then debian/tests/control *must* exist).
+    - autopkgtest-pkg-ruby will be handled by autopkgtest and the implicit
+      test control data that uses gem2deb-test-runner will be used.
+  * improved "usage: " banner in several of the provided programs
+  * SetupRbInstaller: always use the system copy of setup.rb
+  * Gem2Deb#run: always print command lines being executed. This makes build
+    logs much more detailed, what is a good thing.
+  * dh-make-ruby: look for test files recursively in generated
+    debian/ruby-tests.rake for both test/unit and rspec style tests.
+  * dh-make-ruby: gem dependencies will now be included in debian/control
+    uncommented and transformed to Debian package names, i.e. foo → ruby-foo,
+    except for known exceptions (such as rake and rails initially).
+
+ -- Antonio Terceiro <terceiro@debian.org>  Fri, 06 Feb 2015 15:37:58 -0200
+
+gem2deb (0.10) unstable; urgency=medium
+
+  * gem2deb-test-runner: add '.' to $LOAD_PATH with --autopkgtest
+  * dh-make-ruby won't create debian/tests/control anymore since autopkgtest
+    will now auto-detect Ruby packages and assume an implicit tests
+    definition. debian/tests/control.ex will be created instead, with comments
+    explaining to either modify it and rename to control, or delete it.
+  * dh-make-ruby: when test/ or spec/ exists, create debian/ruby-tests.rake
+    with the appropriate rake invocation to run the tests, instead of being
+    insecure and creating files all commented out.
+  * install 'gem2deb/rake/testtask.rb' to gem2deb-test-runner instead of
+    gem2deb
+  * dh-make-ruby: generate uncommented Vcs-* headers in debian/control
+  * dh-make-ruby: remove version qualifier from build-dependency on gem2deb to
+    remove friction when backporting.
+
+ -- Antonio Terceiro <terceiro@debian.org>  Mon, 08 Sep 2014 14:07:02 -0300
+>>>>>>> master
 
 gem2deb (0.9.1) unstable; urgency=medium
 

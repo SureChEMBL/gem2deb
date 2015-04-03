@@ -16,7 +16,7 @@ module Gem2Deb
 
     attr_reader :ruby_versions
     attr_accessor :verbose
-    attr_accessor :dh_auto_install_destdir
+    attr_accessor :destdir_base
 
     attr_accessor :build_args
 
@@ -83,7 +83,7 @@ module Gem2Deb
           end
         versions.each do |version|
           target = File.join(destdir(:root), "/usr/share/rubygems-integration/#{version}/specifications/#{metadata.name}-#{metadata.version}.gemspec")
-          puts "generating gemspec at ${target}"
+          puts "generating gemspec at #{target}"
           FileUtils.mkdir_p(File.dirname(target))
           File.open(target, 'w') do |file|
             file.write(metadata.gemspec.to_ruby)
@@ -169,14 +169,6 @@ module Gem2Deb
         return File.join(dir, `#{SUPPORTED_RUBY_VERSIONS[rubyver]} -rrbconfig -e "puts RbConfig::CONFIG['vendorarchdir']"`.chomp)
       when :prefix
         return File.join(dir, "usr/")
-      end
-    end
-
-    def destdir_base
-      if ENV['DH_RUBY_USE_DH_AUTO_INSTALL_DESTDIR']
-        self.dh_auto_install_destdir
-      else
-        File.join('debian', binary_package)
       end
     end
 

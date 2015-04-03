@@ -39,11 +39,11 @@ desc "Builds a git snapshot package"
 task :snapshot => ['snapshot:build', 'snapshot:clean']
 
 task 'snapshot:build' do
-  sh 'cp debian/changelog debian/changelog.git'
   date = `date --iso=seconds |sed 's/+.*//' |sed 's/[-T:]//g'`.chomp
   sh "sed -i '1 s/)/~git#{date})/' debian/changelog"
-  sh 'ls debian/changelog.git'
-  sh 'dpkg-buildpackage -us -uc'
+  sh 'git commit -a -m snapshot-' + date
+  sh 'git branch snapshot-' + date
+  sh 'DEB_BUILD_OPTIONS=nocheck git-buildpackage --git-ignore-branch -us -uc'
 end
 
 desc 'Build and install a git snapshot'
@@ -54,8 +54,8 @@ task 'snapshot:install' do
 end
 
 task 'snapshot:clean' do
-  sh 'ls debian/changelog.git'
-  sh 'mv debian/changelog.git debian/changelog'
+  sh 'git reset --hard HEAD^'
+  sh 'fakeroot debian/rules clean'
 end
 
 desc "Checks for inconsistencies between version numbers in the code and in debian/changelog"
@@ -75,16 +75,16 @@ task :version_check do
 end
 
 namespace :release do
-  desc "Releases to Debian sid (very much tied to terceiro's workflow)"
-  task :sid do
+  desc "Releases to Debian (very much tied to terceiro's workflow)"
+  task :debian do
     ENV['VERSION_CHECK_FATAL'] = 'yes'
     Rake::Task['version_check'].invoke
 
     sh 'git buildpackage --git-builder=sbuild'
     sh 'git buildpackage --git-tag-only'
+    sh 'debsign'
     sh 'git push --all'
     sh 'git push --tags'
-    sh 'debsign'
     sh 'debrelease'
   end
 end

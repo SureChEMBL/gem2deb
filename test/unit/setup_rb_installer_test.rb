@@ -1,4 +1,4 @@
-require 'test_helper'
+require_relative '../test_helper'
 require 'gem2deb/gem2tgz'
 require 'gem2deb/dh_make_ruby'
 require 'gem2deb/dh_ruby'
@@ -43,9 +43,6 @@ class SetupRbInstallerTest < Gem2DebTestCase
     source_dir = File.join(tmpdir, source_package)
 
     FileUtils.cp_r("test/sample/#{pkgname}", source_dir)
-    # Here, copy setup.rb to the source dir.
-    FileUtils.cp("/usr/lib/ruby/vendor_ruby/setup.rb", 
-                 source_dir)
     system("tar czf #{tarball} -C#{tmpdir} #{source_package}")
     FileUtils.rm_rf(File.join(tmpdir, source_dir))
     Gem2Deb::DhMakeRuby.new(tarball).build
@@ -54,6 +51,7 @@ class SetupRbInstallerTest < Gem2DebTestCase
     dh_ruby.installer_class = Gem2Deb::SetupRbInstaller
     dh_ruby.verbose = false
 
+    ENV['RUBYLIB'] = File.join(File.dirname(__FILE__), '../../lib')
     silence_stream(STDOUT) do
       silence_stream(STDERR) do
         Dir.chdir(package_path) do
