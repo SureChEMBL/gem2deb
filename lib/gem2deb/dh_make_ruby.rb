@@ -281,6 +281,7 @@ module Gem2Deb
         end
       end
       FileUtils.chmod 0755, 'debian/rules'
+      run('wrap-and-sort')
     end
 
     def templates
