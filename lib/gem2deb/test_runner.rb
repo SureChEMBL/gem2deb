@@ -16,6 +16,7 @@
 require 'rbconfig'
 require 'fileutils'
 require 'shellwords'
+require 'tmpdir'
 
 require 'gem2deb/banner'
 require 'gem2deb/metadata'
@@ -27,6 +28,7 @@ module Gem2Deb
 
     attr_accessor :autopkgtest
     attr_accessor :check_dependencies
+    attr_accessor :smoke_assets
 
     def load_path
       if self.autopkgtest
@@ -67,6 +69,9 @@ module Gem2Deb
       if check_dependencies
         do_check_dependencies
       end
+      if smoke_assets
+        do_smoke_assets
+      end
       do_run_tests
     end
 
@@ -83,6 +88,39 @@ module Gem2Deb
           exit(exitstatus)
         end
       end
+    end
+
+    def do_smoke_assets
+      print_banner "Running smoke test for rails assets on #{rubyver}"
+      metadata = Gem2Deb::Metadata.new('.')
+      if metadata.name =~ /^rails-assets/
+      	asset_name = metadata.name.split('rails-assets-')[1]
+	do_smoke(asset_name, metadata.name)
+      elsif metadata.name =~ /-rails$/
+      	asset_name = metadata.name.split('-rails')[0]
+	do_smoke(asset_name, metadata.name)
+      end
+    end
+
+    def do_smoke(asset, gem)
+      print_banner "Running smoke test for #{asset}"
+      if ENV['ADTTMP']
+      	tmpdir = ENV['ADTTMP']
+      else
+      	tmpdir = Dir.mktmpdir
+      end
+      Dir.chdir(tmpdir)
+      # 'rails new foo' throws errors which cause autopkgtest to fail
+      system "rails new foo >/dev/null 2>&1"
+      Dir.chdir("foo")
+      open('app/assets/javascripts/application.js', 'a') { |f|
+        f.puts "# =require #{asset}"
+	}
+      open('Gemfile', 'a') { |f|
+        f.puts "gem \'#{gem}\'"
+	}
+      system "bundle install --local"
+      system "bundle exec rake assets:precompile"
     end
 
     # Override in subclasses

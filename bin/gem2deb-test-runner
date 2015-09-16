@@ -42,6 +42,10 @@ optparse =  OptionParser.new do |opts|
     options[:check_dependencies] = true
   end
 
+  opts.on('-s', '--smoke-assets', 'Run smoke test on assets') do
+    options[:smoke_assets] = true
+  end
+
 end
 
 optparse.parse!
