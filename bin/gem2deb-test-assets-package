@@ -1,0 +1,56 @@
+#!/bin/sh
+
+if test -z $1
+then
+  echo "Usage: gem2deb-test-assets-package <gem name> [<asset name>]"
+  exit 1
+fi
+
+exec 2>&1
+set -ex
+
+gem_name=$1
+
+# Extract asset name from gem name
+if echo ${gem_name} | grep "^rails-assets-"
+then
+  asset_name=`echo ${gem_name} | cut -d'-' -f3-`
+elif echo ${gem_name} | grep "\-rails\$"
+then
+  asset_name=`echo ${gem_name} | rev| cut -d'-' -f2-|rev`
+elif ! test -z $2
+then
+  asset_name=$2
+else
+  echo "You should provide asset name as second argument if gem name"
+  echo "does not start with rails-assets or ends with rails"
+  exit 1
+fi
+
+if test -z $ADTTMP
+then
+  tmpdir=`mktemp -d`
+else
+  tmpdir=$ADTTMP
+fi
+
+# Create a sample rails application
+cd ${tmpdir}
+rails new foo
+cd foo
+
+# Use asset in application
+cat >> app/assets/javascripts/application.js <<EOF
+# =require ${asset_name}
+EOF
+
+# Add gem to Gemfile
+cat >> Gemfile <<EOF
+gem '${gem_name}'
+EOF
+
+# See if gem is found locally
+bundle install --local
+
+# Check if assets can be loaded
+bundle exec rake assets:precompile
